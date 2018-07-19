@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta name="登陆界面" charset="utf-8" content="content">
+	<title>登陆界面</title>
+</head>
+<body>
+	{% if message %}
+		<p style="color:red">{{ message }}</p>
+	{% endif %}
+
+	<form action="/signup" method="post">
+
+    	<legend>Sign Up: </legend>
+
+    	<p>邮箱:{{ form.email(placeholder='yourname@email.com') }}</p>
+    	<p>密码:{{ form.password(placeholder='yourpassword') }}</p>
+    	<p>{{ form.csrf_token }}</p>
+
+    	<p><input type="submit" value="Sign Up"></p>
+	</form>
+</body>
+</html>
