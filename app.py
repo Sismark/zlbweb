@@ -11,21 +11,20 @@ def test_mail():
     return mail.test_mail(email)
 
 
-@app.route('/upload_file', methods=['POST'])
+@app.route('/upload_file', methods=['GET', 'POST'])
 def upload_file():
-    # f = 要上传的文件
-    # file.upload_file(f)
-    pass
+    return file.upload_file()
 
 
-@app.route('/file_list')
+@app.route('/file_list', methods=['GET', 'POST'])
 def file_list():
-    file.file_list()
-    pass
+    filelist=file.file_list()
+    return file.download_file(filelist)
 
 
 def main():
     mail.init(app)
+    file.init(app)
     app.run(host='zlbweb.cn', port=443, ssl_context=('cert.pem', 'key.pem'))
 
 
