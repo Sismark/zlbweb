@@ -20,6 +20,13 @@ app.secret_key = config.secretinfo['secret_key']
 # app.config['WTF_CSRF_TIME_LIMIT'] = 10 # 表单提交限时1分钟，超时则触发CSRF Token校验失败错误
 csrf = CSRFProtect(app)
 
+upload_dir = os.path.join(
+    app.instance_path, 'upload'
+)
+
+if not os.path.exists(upload_dir):
+    os.makedirs(upload_dir, mode=0o755)
+
 # Add LoginManager
 login_manager = LoginManager()
 login_manager.session_protection = config.secretinfo['login_manager_session_protection']
@@ -37,6 +44,12 @@ def load_user(userid):
 def index():
     return render_template('index.html')
 
+# ------------------------------------------------------退出登录部分代码----------------------------
+@app.route('/signoff')
+@login_required
+def signoff():
+    logout_user()
+    return 'Logged out successfully!'
 
 # ----------------------------------------------------注册部分的代码-----------------------------------
 @app.route('/signin', methods=['GET'])
@@ -76,6 +89,9 @@ def do_signup():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
+            login_user(user)
+            next = request.args.get('next')
+            # return redirect(next or url_for('watermark'))
             return render_template('welcome.html', form=form, userName=user.username)
         else:
             return render_template('./login/signin.html', form=form, message='账户或者密码错误')

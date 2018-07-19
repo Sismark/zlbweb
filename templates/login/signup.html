@@ -2,24 +2,39 @@
 <html>
 <head>
 	<meta name = "注册界面" charset="utf-8" content="content">
+	<link rel="stylesheet" type="text/css" href="../../static/css/login.css">
 	<title>用户注册界面</title>
 </head>
 <body>
-	{% if message %}
+	<div id = "title">
+		<p>夏季小学期实践</p>
+	</div>
+
+	<div id = "main">
+
+		<div id = "showimage">
+			<h1>预留区域</h1>
+		</div>
+		
+		<div id = "login">
+			{% if message %}
 		<p style="color:red">{{ message }}</p>
 	{% endif %}
 
-	<form action="/signin" method="post">
+			<form action="/signin" method="post">
 
-    	<legend>Sign In: </legend>
+    			<legend>Sign In: </legend>
 
-    	<p>用户名:{{ form.userName(placeholder='yourUsername') }}</p>
-    	<p>邮箱:{{ form.email(placeholder='yourname@email.com') }}</p>
-    	<p>密码:{{ form.password(placeholder='yourpassword') }}</p>
-    	<p>{{ form.csrf_token }}</p>
+		    	<p>用户名:{{ form.userName(placeholder='yourUsername') }}</p>
+		    	<p>邮箱:{{ form.email(placeholder='yourname@email.com') }}</p>
+		    	<p>密码:{{ form.password(placeholder='yourpassword') }}</p>
+		    	<p>{{ form.csrf_token }}</p>
 
-    	<p><input type="submit" value="Sign In"></p>
-	</form>
+		    	<p><input type="submit" value="Sign In"></p>
+			</form>
+		</div>
+		
+	</div>
 
 </body>
 </html>
