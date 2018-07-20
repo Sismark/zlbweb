@@ -1,10 +1,12 @@
 from flask import Flask, request
 import mail
 import file
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, flash
 from forms.signin_form import LoginForm
 from forms.signup_form import RegisterForm
 from flask_wtf.csrf import CSRFProtect, CSRFError
+from forms.watermark_form import WatermarkForm
+from werkzeug.exceptions import HTTPException, NotFound
 from flask_login import LoginManager, login_required, login_user, logout_user
 
 import os
@@ -26,6 +28,18 @@ upload_dir = os.path.join(
 
 if not os.path.exists(upload_dir):
     os.makedirs(upload_dir, mode=0o755)
+
+ALLOWED_EXTENSIONS = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'rtf', 'txt',
+                      'png', 'bmp', 'jpg']  # 允许上传的文件格式
+ALLOWED_FILE_SIZE = 1 * 1024 * 1024 * 10  # 允许上传的文件大小
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+
+def allowed_size(size):
+    return size <= ALLOWED_FILE_SIZE
 
 # Add LoginManager
 login_manager = LoginManager()
@@ -64,14 +78,16 @@ def do_signin():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None:
-            login_user(user)
             # next = request.args.get('next')
             # return redirect(next or url_for('welcome'))
             return render_template('./login/signup.html', form=form, message="该邮箱已被注册")
         else:
+            login_user(user)
             id = (User.query.order_by((User.id).desc()).first()).id + 1
             add_user(form, id)
-            return render_template('welcome.html', form=form, userName=form.userName.data)
+            next = request.args.get('next')
+            return redirect(next or url_for('upload'))
+            # return render_template('welcome.html', form=form, userName=form.userName.data)
     else:
         return render_template('./login/signup.html', form=form, message=list(form.errors.values())[0][0])
 
@@ -91,8 +107,8 @@ def do_signup():
         if user is not None and user.verify_password(form.password.data):
             login_user(user)
             next = request.args.get('next')
-            # return redirect(next or url_for('watermark'))
-            return render_template('welcome.html', form=form, userName=user.username)
+            return redirect(next or url_for('upload'))
+            # return render_template('welcome.html', form=form, userName=user.username)
         else:
             return render_template('./login/signin.html', form=form, message='账户或者密码错误')
     else:
@@ -109,11 +125,23 @@ def test_mail():
     return mail.test_mail(email)
 
 
-@app.route('/upload_file', methods=['POST'])
-def upload_file():
-    # f = 要上传的文件
-    # file.upload_file(f)
-    pass
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    form = WatermarkForm()
+    if form.validate_on_submit():
+        f = form.image.data
+        size = len(f.read())
+        if allowed_file(f.filename):
+            if allowed_size(size):
+                f.seek(0)
+                f.save(os.path.join(upload_dir, f.filename))
+                flash('Upload success。')
+                return redirect(url_for('upload'))
+            else:
+                flash('上传失败，文件大小：<=10M')
+        else:
+            flash('上传失败，允许上传的文件类型：office文档、常见图片类型')
+    return render_template('./upload/upload.html', form=form)
 
 
 @app.route('/file_list')
