@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, flash
-from forms.watermark_form import WatermarkForm
+from forms.upload_form import CheckFile
+from flask import send_from_directory
 import os
 
 app = None
@@ -33,7 +34,7 @@ def allowed_size(size):  # 检查文件大小是否合法
 
 
 def upload_file():
-    form = WatermarkForm()
+    form = CheckFile()
     if form.validate_on_submit():
         f = form.image.data
         size = len(f.read())
@@ -50,7 +51,15 @@ def upload_file():
     return render_template('./upload/upload.html', form=form)
 
 
-def file_list():  # 文件下载
+def file_list():  # 返回已经上传的文件列表
+    name=''
     for parent, dirname, filenames in os.walk(upload_dir):
         filelist = filenames
-    return filelist
+    for i in range(len(filelist)):
+        name+=filelist[i]+'\t'
+    print(name)
+    return render_template('./upload/download.html', message=name)
+
+
+def download(filename):
+    return send_from_directory(upload_dir, filename, mimetype='application/octet-stream')

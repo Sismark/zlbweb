@@ -14,11 +14,21 @@
 	padding-left: 10%;
 	padding-top:0;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6a2977830e14dba526d01a4f77b3e9c01f8b2d34
 #showimage {
 	width:50%;
 	margin: 0 ;
 	padding: 0 ;
 	display:inline-block ; 
+<<<<<<< HEAD
+=======
+	/*background-color:red;*/
+	height: 300px;
+	float: top;
+>>>>>>> 6a2977830e14dba526d01a4f77b3e9c01f8b2d34
 }
 
 #login {
@@ -26,6 +36,10 @@
 	margin: 0 ;
 	padding: 0 ;
 	display:inline-block ; 
+<<<<<<< HEAD
+=======
+	/*background-color: yellow;*/
+>>>>>>> 6a2977830e14dba526d01a4f77b3e9c01f8b2d34
 }
 
 body{

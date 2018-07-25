@@ -13,6 +13,7 @@ import config
 
 from database import create_app, add_user
 from models import User
+import signinup
 
 app = create_app()
 # 防止跨站脚本攻击
@@ -24,11 +25,11 @@ csrf = CSRFProtect(app)
 # Add LoginManager
 login_manager = LoginManager()
 login_manager.session_protection = config.secretinfo['login_manager_session_protection']
-login_manager.login_view = config.secretinfo['login_manager_login_view']
+#login_manager.login_view = config.secretinfo['login_manager_login_view']
 login_manager.login_message = config.secretinfo['login_manager_login_message']
 login_manager.login_message_category = config.secretinfo['login_manager_login_message_category']
 login_manager.init_app(app)
-
+login_manager.login_view='/signup'
 
 @login_manager.user_loader
 def load_user(userid):
@@ -57,22 +58,8 @@ def signin():
 
 @app.route('/signin', methods=['POST'])
 def do_signin():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is not None:
-            # next = request.args.get('next')
-            # return redirect(next or url_for('welcome'))
-            return render_template('./login/signup.html', form=form, message="该邮箱已被注册")
-        else:
-            login_user(user)
-            id = (User.query.order_by((User.id).desc()).first()).id + 1
-            add_user(form, id)
-            next = request.args.get('next')
-            return redirect(next or url_for('upload'))
-            # return render_template('welcome.html', form=form, userName=form.userName.data)
-    else:
-        return render_template('./login/signup.html', form=form, message=list(form.errors.values())[0][0])
+    html = signinup.signin_User()
+    return html
 
 
 # --------------------------------------------登陆部分的代码-------------------------------------------
@@ -84,18 +71,8 @@ def signup():
 
 @app.route('/signup', methods=['POST'])
 def do_signup():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
-        if user is not None and user.verify_password(form.password.data):
-            login_user(user)
-            next = request.args.get('next')
-            return redirect(next or url_for('upload'))
-            # return render_template('welcome.html', form=form, userName=user.username)
-        else:
-            return render_template('./login/signin.html', form=form, message='账户或者密码错误')
-    else:
-        return render_template('./login/signin.html', form=form, message='账户或者密码错误')
+    html = signinup.signup_User()
+    return html
 
 
 @csrf.exempt
@@ -110,26 +87,22 @@ def test_mail():
     return mail.test_mail(email)
 
 
-# <<<<<<< HEAD
+
 @app.route('/upload_file', methods=['GET', 'POST'])
+@login_required
 def upload_file():
     return file.upload_file()
-
-
-# =======
-@app.route('/upload', methods=['GET', 'POST'])
-def upload():
-    f = file.upload_file()
-    return f
-
-
-# >>>>>>> d4ddbba3eae3c1884ba6159ef206fba546ce4708
 
 
 @app.route('/file_list', methods=['GET', 'POST'])
 def file_list():
     filelist = file.file_list()
-    return file.download_file(filelist)
+    return filelist
+
+
+@app.route('/download/<path:filename>', methods=['GET', 'POST'])
+def download(filename):
+    return file.download(filename)
 
 
 def main():
